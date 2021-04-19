@@ -38,8 +38,6 @@ services:
       - "traefik.http.routers.api@internal.entrypoints=traefik"
       - "traefik.http.routers.api@internal.tls=true"
       - "traefik.http.routers.api@internal.service=api@internal"
-
-
     ports:
       - "80:80"
       - "443:443"
