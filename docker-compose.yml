@@ -6,8 +6,9 @@ services:
     command:
       - "--accesslog"
 
+      - "--api=true"
       - "--api.dashboard=true"
-      - "--api.insecure=true"
+      - "--api.insecure=false"
 
       - "--providers.docker=true"
       - "--providers.file.filename=/conf/traefik.yml"
@@ -16,6 +17,29 @@ services:
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
       - "--entrypoints.websecure.address=:443"
+
+      - "--entrypoints.traefik.address=:8080"
+      - "--entrypoints.traefik.http.redirections.entrypoint.to=traefik"
+      - "--entrypoints.traefik.http.redirections.entrypoint.scheme=https"
+    labels:
+      - "traefik.enable=true"
+
+      - "traefik.http.routers.dashboard@internal.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.dashboard@internal.entrypoints=traefik"
+      - "traefik.http.routers.dashboard@internal.tls=true"
+      - "traefik.http.routers.dashboard@internal.service=dashboard@internal"
+      - "traefik.http.middlewares.dashboard_redirect@internal.redirectregex.regex=^(https:\\/\\/(\\[[\\w:.]+\\]|[\\w\\._-]+)(:\\d+)?)\\/$$"
+
+      - "traefik.http.middlewares.dashboard_redirect@internal.redirectregex.replacement=$${1}/dashboard/"
+      - "traefik.http.middlewares.dashboard_redirect@internal.redirectregex.permanent=true"
+      - "traefik.http.middlewares.dashboard@internal.stripprefix.prefixes=/dashboard/,/dashboard"
+
+      - "traefik.http.routers.api@internal.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.api@internal.entrypoints=traefik"
+      - "traefik.http.routers.api@internal.tls=true"
+      - "traefik.http.routers.api@internal.service=api@internal"
+
+
     ports:
       - "80:80"
       - "443:443"
